@@ -1,0 +1,7 @@
+This is a mobile substrate tweak that adds a little button to the Notification Center.  When pressed, it presents a modal view for tweeting.  It requires iOS 5, since it lives in the Notification Center.
+
+I don't know what license this falls under, but I'll give it my best shot to clarify.
+
+Feel free to steal and use code as you please, but if you plan to release something competing, just give me a heads up beforehand at mergesort@me.com.
+
+-Joe
