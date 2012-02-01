@@ -43,6 +43,8 @@
 
 -(void) quickTweet_popTweetPane
 {
+//[[objc_getClass("SBBulletinListController") sharedInstance] hideListViewAnimated:YES];
+
 	UIWindow *originalWindow = [[UIApplication sharedApplication] keyWindow];
 	
     UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
