@@ -1,7 +1,8 @@
 #import <Twitter/Twitter.h>
 
 //@author: Joseph Fabisevich
-//@version: 1.0
+//Settings additions by @pathkiller29
+//@version: 1.1
 
 %config(generator=internal)
 
@@ -21,53 +22,73 @@
 
 - (id)initWithFrame:(CGRect)frame delegate:(id)delegate
 {
-	if ((self = %orig))
-	{
-		UIButton *tweetButton = [UIButton buttonWithType:UIButtonTypeCustom];
-	
-		[tweetButton setBackgroundImage:[UIImage imageWithContentsOfFile:@"/Library/Application Support/QuickTweet/QuickTweet.png"] forState:UIControlStateNormal];
+	NSString *filePath = @"/var/mobile/Library/Preferences/com.pathkiller.quicktweet.plist";
+	NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
 
-		tweetButton.frame = CGRectMake(8, self.frame.size.height-28, 55, 24);
-			
-		UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(quickTweet_popTweetPane)];
-		tap.numberOfTapsRequired = 1;
-	
-		[tweetButton addGestureRecognizer: tap];
-		[self.slidingView addSubview: tweetButton];	
+	NSString *position = [plist objectForKey:@"position"];
+	BOOL enabled = (filePath != nil) ? [[plist objectForKey:@"enabled"] boolValue] : YES;
+
+
+	if(!enabled)
+	{
+		%orig;
 	}
+	else
+	{
+		if ((self = %orig))
+		{
+			UIButton *tweetButton = [UIButton buttonWithType:UIButtonTypeCustom];
 	
+			[tweetButton setBackgroundImage:[UIImage imageWithContentsOfFile:@"/Library/Application Support/QuickTweet/QuickTweet.png"] forState:UIControlStateNormal];
+	
+			int x = ([position isEqualToString:@"2"]) ? self.frame.size.width-63 : 8;
+			tweetButton.frame = CGRectMake(x, self.frame.size.height-28, 55, 24);
+	
+			UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(quickTweet_popTweetPane)];
+			tap.numberOfTapsRequired = 1;
+	
+			[tweetButton addGestureRecognizer: tap];
+			[self.slidingView addSubview: tweetButton];	
+		}
+	}	
 	return self;
 }
 
-%new 
+%new(v@:)
 
 -(void) quickTweet_popTweetPane
 {
-//[[objc_getClass("SBBulletinListController") sharedInstance] hideListViewAnimated:YES];
+	NSString *filePath = @"/var/mobile/Library/Preferences/com.pathkiller.quicktweet.plist";
+	NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
+
+	BOOL shouldClose = [[plist objectForKey:@"shouldClose"] boolValue];
+
+	if(shouldClose)
+        [[objc_getClass("SBBulletinListController") sharedInstance] hideListViewAnimated:YES];
 
 	UIWindow *originalWindow = [[UIApplication sharedApplication] keyWindow];
+
+	UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
-    UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
 	UIViewController *viewController = [[UIViewController alloc] init];
-
+	
 	window.windowLevel = UIWindowLevelAlert;
 	window.rootViewController = viewController;
-    [window makeKeyAndVisible];
-
+	[window makeKeyAndVisible];
+		
 	TWTweetComposeViewController *twitter = [[TWTweetComposeViewController alloc] init];
-	
+
 	[viewController presentViewController:twitter animated:YES completion:nil];
-	
-    twitter.completionHandler = ^(TWTweetComposeViewControllerResult res) 
+
+	twitter.completionHandler = ^(TWTweetComposeViewControllerResult res) 
 	{	
-        [viewController dismissModalViewControllerAnimated:YES];
-	
+		[viewController dismissModalViewControllerAnimated:YES];
+			
 		[viewController release];
 		[window release];
-		
+	
 		[originalWindow makeKeyAndVisible];
-    };
+	};	
 }
 
 %end 
