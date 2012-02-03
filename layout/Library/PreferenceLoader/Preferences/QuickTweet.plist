@@ -22,6 +22,8 @@
 			<string>enabled</string>
 			<key>label</key>
 			<string>Enabled</string>
+			<key>default</key>
+			<true/>
 			<key>postNotification</key>
 			<string>com.pathkiller.quicktweet.prefs</string>
 		</dict>
@@ -34,6 +36,8 @@
 			<string>shouldClose</string>
 			<key>label</key>
 			<string>Dismiss NC</string>
+			<key>default</key>
+			<true/>
 			<key>postNotification</key>
 			<string>com.pathkiller.quicktweet.prefs</string>
 		</dict>
@@ -66,10 +70,6 @@
 				<string>1</string>
 				<string>2</string>
 			</array>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
 		</dict>
 		<dict>
 			<key>alignment</key>
