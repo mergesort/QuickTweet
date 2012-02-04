@@ -1,7 +1,7 @@
 Package: com.mergesort.QuickTweet
 Name: QuickTweet
 Depends: firmware (>= 5.0), mobilesubstrate
-Version: 1.1.1-1
+Version: 1.1.2-1
 Architecture: iphoneos-arm
 Description: An tweak that adds a button into your notification center for quickly tweeting.
 Conflicts: gsc.wildcat

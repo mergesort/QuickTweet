@@ -26,9 +26,11 @@
 	NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
 
 	NSString *position = [plist objectForKey:@"position"];
-	BOOL enabled = (filePath != nil) ? [[plist objectForKey:@"enabled"] boolValue] : YES;
+	BOOL enabled = ([plist objectForKey:@"enabled"] != nil) ? [[plist objectForKey:@"enabled"] boolValue] : YES;
 
-
+	if(filePath == nil)
+		enabled = YES;
+		
 	if(!enabled)
 	{
 		%orig;
@@ -61,7 +63,10 @@
 	NSString *filePath = @"/var/mobile/Library/Preferences/com.pathkiller.quicktweet.plist";
 	NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
 
-	BOOL shouldClose = [[plist objectForKey:@"shouldClose"] boolValue];
+	BOOL shouldClose = ([plist objectForKey:@"shouldClose"] != nil) ? [[plist objectForKey:@"shouldClose"] boolValue] : YES;
+
+	if(filePath == nil)
+		shouldClose = YES;
 
 	if(shouldClose)
         [[objc_getClass("SBBulletinListController") sharedInstance] hideListViewAnimated:YES];
