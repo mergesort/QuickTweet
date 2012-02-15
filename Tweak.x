@@ -5,71 +5,51 @@
 //@version: 1.1
 
 %config(generator=internal)
-
 @class ViewController;
-
 @interface SBBulletinListView : UIView
 {
     UIView *_slidingView;
 }
-
 - (id)slidingView;
 - (id)initWithFrame:(struct CGRect)fp8 delegate:(id)fp24;
-
 @end
 
+static BOOL enabled;
+static BOOL closeNC;
+static NSString *position;
+
+static void LoadSettings() {
+	NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.pathkiller.quicktweet.plist"];
+	enabled = [[dict objectForKey:@"enabled"] boolValue] ? [[dict objectForKey:@"enabled"] boolValue] : YES;
+	closeNC = [[dict objectForKey:@"shouldClose"] ? [[dict objectForKey:@"shouldClose"] : YES;
+	position = [[dict objectForKey:@"position"] copy];
+	[dict release];	
+}
+
 %hook SBBulletinListView
-
-- (id)initWithFrame:(CGRect)frame delegate:(id)delegate
-{
-	NSString *filePath = @"/var/mobile/Library/Preferences/com.pathkiller.quicktweet.plist";
-	NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
-
-	NSString *position = [plist objectForKey:@"position"];
-	BOOL enabled = ([plist objectForKey:@"enabled"] != nil) ? [[plist objectForKey:@"enabled"] boolValue] : YES;
-
-	if(filePath == nil)
-		enabled = YES;
-		
-	if(!enabled)
-	{
-		%orig;
-	}
-	else
-	{
-		if ((self = %orig))
-		{
-			UIButton *tweetButton = [UIButton buttonWithType:UIButtonTypeCustom];
-	
-			[tweetButton setBackgroundImage:[UIImage imageWithContentsOfFile:@"/Library/Application Support/QuickTweet/QuickTweet.png"] forState:UIControlStateNormal];
-	
+- (id)initWithFrame:(CGRect)frame delegate:(id)delegate {
+	if (enabled) {
+		if ((self = %orig)) {
+			UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+			[button setBackgroundImage:[UIImage imageWithContentsOfFile:@"/Library/Application Support/QuickTweet/QuickTweet.png"] forState:UIControlStateNormal];
 			int x = ([position isEqualToString:@"2"]) ? self.frame.size.width-63 : 8;
-			tweetButton.frame = CGRectMake(x, self.frame.size.height-28, 55, 24);
-	
-			UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(quickTweet_popTweetPane)];
-			tap.numberOfTapsRequired = 1;
-	
-			[tweetButton addGestureRecognizer: tap];
-			[self.slidingView addSubview: tweetButton];	
+			button.frame = CGRectMake(x, self.frame.size.height-28, 55, 24);
+			UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showTweet)];
+			[button addGestureRecognizer:tap];
+			[self.slidingView addSubview:button];
+			[tap release];
+			[button release];
 		}
+	} else {
+		%orig;
 	}	
 	return self;
 }
 
 %new(v@:)
 
--(void) quickTweet_popTweetPane
-{
-	NSString *filePath = @"/var/mobile/Library/Preferences/com.pathkiller.quicktweet.plist";
-	NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
-
-	BOOL shouldClose = ([plist objectForKey:@"shouldClose"] != nil) ? [[plist objectForKey:@"shouldClose"] boolValue] : YES;
-
-	if(filePath == nil)
-		shouldClose = YES;
-
-	if(shouldClose)
-        [[objc_getClass("SBBulletinListController") sharedInstance] hideListViewAnimated:YES];
+-(void)showTweet {
+	if (shouldClose) [[objc_getClass("SBBulletinListController") sharedInstance] hideListViewAnimated:YES];
 
 	UIWindow *originalWindow = [[UIApplication sharedApplication] keyWindow];
 
@@ -95,5 +75,12 @@
 		[originalWindow makeKeyAndVisible];
 	};	
 }
-
 %end 
+
+%ctor {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	%init;
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)LoadSettings, CFSTR("com.pathkiller.quicktweet/prefs"), NULL, CFNotificationSuspensionBehaviorCoalesce);
+	LoadSettings();
+	[pool drain];
+}
